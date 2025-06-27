@@ -1,14 +1,18 @@
 
 import { useState, useEffect } from 'react';
 import { format, subDays, addDays } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar, TrendingUp, Heart, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, TrendingUp, Heart, BookOpen, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import HabitTracker from '@/components/HabitTracker';
 import MoodTracker from '@/components/MoodTracker';
 import DailyNotes from '@/components/DailyNotes';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export interface DiaryEntry {
   date: string;
@@ -28,16 +32,47 @@ const Index = () => {
     moodNote: '',
     notes: ''
   });
+  
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
 
-  // Load data from localStorage on mount
+  // Load data from Supabase
   useEffect(() => {
-    const savedEntries = localStorage.getItem('diary-entries');
-    if (savedEntries) {
-      setEntries(JSON.parse(savedEntries));
-    }
-  }, []);
+    const loadEntries = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('diary_entries')
+          .select('*')
+          .eq('user_id', user.id);
+        
+        if (error) {
+          console.error('Error loading entries:', error);
+          return;
+        }
+        
+        const entriesMap: { [key: string]: DiaryEntry } = {};
+        data?.forEach(entry => {
+          entriesMap[entry.date] = {
+            date: entry.date,
+            habits: entry.habits || {},
+            mood: entry.mood || 0,
+            moodNote: entry.mood_note || '',
+            notes: entry.notes || ''
+          };
+        });
+        
+        setEntries(entriesMap);
+      } catch (error) {
+        console.error('Error loading entries:', error);
+      }
+    };
+
+    loadEntries();
+  }, [user]);
 
   // Update current entry when date changes
   useEffect(() => {
@@ -51,12 +86,49 @@ const Index = () => {
     setCurrentEntry(entry);
   }, [selectedDate, entries, dateKey]);
 
-  // Save entry to localStorage
-  const saveEntry = (updatedEntry: DiaryEntry) => {
-    const updatedEntries = { ...entries, [dateKey]: updatedEntry };
-    setEntries(updatedEntries);
-    localStorage.setItem('diary-entries', JSON.stringify(updatedEntries));
-    setCurrentEntry(updatedEntry);
+  // Save entry to Supabase
+  const saveEntry = async (updatedEntry: DiaryEntry) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('diary_entries')
+        .upsert({
+          user_id: user.id,
+          date: updatedEntry.date,
+          habits: updatedEntry.habits,
+          mood: updatedEntry.mood,
+          mood_note: updatedEntry.moodNote,
+          notes: updatedEntry.notes,
+          updated_at: new Date().toISOString()
+        });
+      
+      if (error) {
+        console.error('Error saving entry:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save your entry. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const updatedEntries = { ...entries, [dateKey]: updatedEntry };
+      setEntries(updatedEntries);
+      setCurrentEntry(updatedEntry);
+      
+      toast({
+        title: "Saved!",
+        description: "Your diary entry has been saved.",
+      });
+    } catch (error) {
+      console.error('Error saving entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your entry. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const navigateDate = (direction: 'prev' | 'next') => {
@@ -67,13 +139,38 @@ const Index = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You've been successfully signed out.",
+    });
+  };
+
   const isToday = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
+        {/* Header with User Info */}
         <div className="text-center mb-8 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <User className="h-6 w-6 text-purple-600 mr-2" />
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                {user?.email}
+              </Badge>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="hover:bg-red-100 hover:text-red-600"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
             My Daily Diary
           </h1>
