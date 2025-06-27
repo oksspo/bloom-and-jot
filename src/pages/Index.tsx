@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { format, subDays, addDays } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar, TrendingUp, Heart, BookOpen, LogOut, User } from 'lucide-react';
@@ -38,6 +37,21 @@ const Index = () => {
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
 
+  // Helper function to safely parse habits from JSON
+  const parseHabits = (habits: any): { [key: string]: boolean } => {
+    if (!habits || typeof habits !== 'object' || Array.isArray(habits)) {
+      return {};
+    }
+    
+    // Ensure all values are boolean
+    const parsedHabits: { [key: string]: boolean } = {};
+    Object.keys(habits).forEach(key => {
+      parsedHabits[key] = Boolean(habits[key]);
+    });
+    
+    return parsedHabits;
+  };
+
   // Load data from Supabase
   useEffect(() => {
     const loadEntries = async () => {
@@ -58,7 +72,7 @@ const Index = () => {
         data?.forEach(entry => {
           entriesMap[entry.date] = {
             date: entry.date,
-            habits: entry.habits || {},
+            habits: parseHabits(entry.habits),
             mood: entry.mood || 0,
             moodNote: entry.mood_note || '',
             notes: entry.notes || ''
