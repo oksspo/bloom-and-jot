@@ -9,6 +9,8 @@ import HabitTracker from '@/components/HabitTracker';
 import MoodTracker from '@/components/MoodTracker';
 import DailyNotes from '@/components/DailyNotes';
 import MonthPreview from '@/components/MonthPreview';
+import MoodMonthPreview from '@/components/MoodMonthPreview';
+import HabitsProgressWidget from '@/components/HabitsProgressWidget';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -166,7 +168,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header with User Info */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="flex items-center justify-between mb-4">
@@ -192,18 +194,27 @@ const Index = () => {
           <p className="text-gray-600">Track your habits, mood, and thoughts</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Month Preview - Left Side */}
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          {/* Left Sidebar - Month Previews */}
+          <div className="xl:col-span-1 space-y-6">
             <MonthPreview 
               entries={entries}
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
             />
+            <MoodMonthPreview 
+              entries={entries}
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+            />
+            <HabitsProgressWidget 
+              entries={entries}
+              selectedDate={selectedDate}
+            />
           </div>
 
           {/* Main Content - Right Side */}
-          <div className="lg:col-span-2">
+          <div className="xl:col-span-3">
             {/* Date Navigation */}
             <Card className="mb-6 border-0 shadow-lg bg-white/70 backdrop-blur-sm">
               <CardContent className="p-6">
