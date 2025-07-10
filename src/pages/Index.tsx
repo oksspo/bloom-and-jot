@@ -9,8 +9,8 @@ import HabitTracker from '@/components/HabitTracker';
 import MoodTracker from '@/components/MoodTracker';
 import DailyNotes from '@/components/DailyNotes';
 import MonthPreview from '@/components/MonthPreview';
-import MoodMonthPreview from '@/components/MoodMonthPreview';
-import HabitsProgressWidget from '@/components/HabitsProgressWidget';
+import MoodChart from '@/components/MoodChart';
+import HabitsChart from '@/components/HabitsChart';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -194,27 +194,26 @@ const Index = () => {
           <p className="text-gray-600">Track your habits, mood, and thoughts</p>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Left Sidebar - Month Previews */}
-          <div className="xl:col-span-1 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Sidebar - Month Preview and Charts */}
+          <div className="lg:col-span-1 space-y-6">
             <MonthPreview 
               entries={entries}
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
             />
-            <MoodMonthPreview 
+            <MoodChart 
               entries={entries}
               selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
             />
-            <HabitsProgressWidget 
+            <HabitsChart 
               entries={entries}
               selectedDate={selectedDate}
             />
           </div>
 
           {/* Main Content - Right Side */}
-          <div className="xl:col-span-3">
+          <div className="lg:col-span-3">
             {/* Date Navigation */}
             <Card className="mb-6 border-0 shadow-lg bg-white/70 backdrop-blur-sm">
               <CardContent className="p-6">
