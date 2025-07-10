@@ -110,15 +110,20 @@ const Index = () => {
     try {
       const { error } = await supabase
         .from('diary_entries')
-        .upsert({
-          user_id: user.id,
-          date: updatedEntry.date,
-          habits: updatedEntry.habits,
-          mood: updatedEntry.mood,
-          mood_note: updatedEntry.moodNote,
-          notes: updatedEntry.notes,
-          updated_at: new Date().toISOString()
-        });
+        .upsert([
+              {
+                user_id: user.id,
+                date: updatedEntry.date,
+                habits: updatedEntry.habits,
+                mood: updatedEntry.mood,
+                mood_note: updatedEntry.moodNote,
+                notes: updatedEntry.notes,
+                updated_at: new Date().toISOString(),
+              },
+            ],
+            {
+              onConflict: 'user_id,date',
+            });
       
       if (error) {
         console.error('Error saving entry:', error);
