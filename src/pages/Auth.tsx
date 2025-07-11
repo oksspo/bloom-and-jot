@@ -8,14 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Heart, Mail, Lock, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocale } from '@/hooks/useLocale';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const { signIn, signUp } = useAuth();
+  const { t } = useLocale();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -59,8 +62,8 @@ const Auth = () => {
       setError(error.message);
     } else {
       toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
+        title: t('welcomeBack'),
+        description: t('signInSuccess'),
       });
       navigate('/');
     }
@@ -95,8 +98,8 @@ const Auth = () => {
       }
     } else {
       toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
+        title: t('accountCreated'),
+        description: t('checkEmail'),
       });
     }
     
@@ -110,10 +113,13 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-4">
             <Heart className="h-8 w-8 text-pink-600 mr-2" />
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              My Daily Diary
+              {t('myDailyDiary')}
             </h1>
           </div>
-          <p className="text-gray-600">Your personal space for reflection and growth</p>
+          <p className="text-gray-600">{t('tagline')}</p>
+          <div className="mt-4 flex justify-center">
+            <LanguageSwitcher />
+          </div>
         </div>
 
         <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">

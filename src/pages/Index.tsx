@@ -11,8 +11,10 @@ import DailyNotes from '@/components/DailyNotes';
 import MonthPreview from '@/components/MonthPreview';
 import MoodChart from '@/components/MoodChart';
 import HabitsChart from '@/components/HabitsChart';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocale } from '@/hooks/useLocale';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -36,6 +38,7 @@ const Index = () => {
   });
   
   const { user, signOut } = useAuth();
+  const { t } = useLocale();
   const { toast } = useToast();
 
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -123,8 +126,8 @@ const Index = () => {
       if (error) {
         console.error('Error saving entry:', error);
         toast({
-          title: "Error",
-          description: "Failed to save your entry. Please try again.",
+          title: t('error'),
+          description: t('saveError'),
           variant: "destructive"
         });
         return;
@@ -135,14 +138,14 @@ const Index = () => {
       setCurrentEntry(updatedEntry);
       
       toast({
-        title: "Saved!",
-        description: "Your diary entry has been saved.",
+        title: t('saved'),
+        description: t('saveDescription'),
       });
     } catch (error) {
       console.error('Error saving entry:', error);
       toast({
-        title: "Error",
-        description: "Failed to save your entry. Please try again.",
+        title: t('error'),
+        description: t('saveError'),
         variant: "destructive"
       });
     }
@@ -159,8 +162,8 @@ const Index = () => {
   const handleSignOut = async () => {
     await signOut();
     toast({
-      title: "Signed out",
-      description: "You've been successfully signed out.",
+      title: t('signedOut'),
+      description: t('signOutDescription'),
     });
   };
 
@@ -178,20 +181,23 @@ const Index = () => {
                 {user?.email}
               </Badge>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="hover:bg-red-100 hover:text-red-600"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="hover:bg-red-100 hover:text-red-600"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                {t('signOut')}
+              </Button>
+            </div>
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-            My Daily Diary
+            {t('myDailyDiary')}
           </h1>
-          <p className="text-gray-600">Track your habits, mood, and thoughts</p>
+          <p className="text-gray-600">{t('tagline')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -234,7 +240,7 @@ const Index = () => {
                     </span>
                     {isToday && (
                       <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                        Today
+                        {t('today')}
                       </span>
                     )}
                   </div>
@@ -257,15 +263,15 @@ const Index = () => {
               <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/70 backdrop-blur-sm">
                 <TabsTrigger value="habits" className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
-                  Habits
+                  {t('habits')}
                 </TabsTrigger>
                 <TabsTrigger value="mood" className="flex items-center gap-2">
                   <Heart className="h-4 w-4" />
-                  Mood
+                  {t('mood')}
                 </TabsTrigger>
                 <TabsTrigger value="notes" className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  Notes
+                  {t('notes')}
                 </TabsTrigger>
               </TabsList>
 
